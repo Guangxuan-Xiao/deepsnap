@@ -21,6 +21,7 @@ class Generator(object):
     Abstract class of on the fly generator used in dataset.
     It generates graphs on the fly to be fed into the model.
     """
+
     def __init__(self, sizes, size_prob=None, dataset_len=0):
         self.sizes = sizes
         if sizes is not None:
@@ -194,6 +195,7 @@ class GraphDataset(object):
                 of tensor backend custom split.
             netlib: Graph backend packages, currently support networkx & snapx.
         """
+
     def __init__(
         self,
         graphs: List[Graph],
@@ -1169,7 +1171,8 @@ class GraphDataset(object):
         verbose: bool = False,
         fixed_split: bool = False,
         tensor_backend: bool = False,
-        netlib=None
+        netlib=None,
+        directed: bool = True
     ) -> List[Graph]:
         r"""
         Transform a torch_geometric.data.Dataset object to a list of
@@ -1189,7 +1192,7 @@ class GraphDataset(object):
             graphs = [
                 Graph.pyg_to_graph(
                     data, verbose=verbose, fixed_split=True,
-                    tensor_backend=tensor_backend, netlib=netlib
+                    tensor_backend=tensor_backend, netlib=netlib, directed=directed
                 )
                 for data in dataset
             ]
@@ -1200,7 +1203,7 @@ class GraphDataset(object):
                 Graph.pyg_to_graph(
                     data, verbose=verbose,
                     tensor_backend=tensor_backend,
-                    netlib=netlib
+                    netlib=netlib, directed=directed
                 )
                 for data in dataset
             ]

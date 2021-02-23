@@ -5,7 +5,6 @@ import math
 import pdb
 import numpy as np
 import torch
-from torch_geometric.utils import to_undirected
 from typing import (
     Dict,
     List,
@@ -349,6 +348,11 @@ class Graph(object):
             bool: :obj:`True` if the graph is undirected.
         """
         return not self.is_directed()
+
+    def to_undirected(self):
+        if isinstance(self.G, deepsnap._netlib.DiGraph):
+            self.G.to_undirected()
+            self.directed = False
 
     def apply_tensor(self, func, *keys):
         r"""
@@ -1893,7 +1897,8 @@ class Graph(object):
         verbose: bool = False,
         fixed_split: bool = False,
         tensor_backend: bool = False,
-        netlib=None
+        netlib=None,
+        directed: bool = True
     ):
         r"""
         Converts Pytorch Geometric data to a Graph object.
@@ -1930,7 +1935,7 @@ class Graph(object):
         if not tensor_backend:
             if netlib is not None:
                 deepsnap._netlib = netlib
-            if data.is_directed():
+            if data.is_directed() and directed:
                 G = deepsnap._netlib.DiGraph()
             else:
                 G = deepsnap._netlib.Graph()

@@ -1,0 +1,91 @@
+[1mdiff --git a/deepsnap/dataset.py b/deepsnap/dataset.py[m
+[1mindex 504ac95..dcd3dd9 100644[m
+[1m--- a/deepsnap/dataset.py[m
+[1m+++ b/deepsnap/dataset.py[m
+[36m@@ -21,6 +21,7 @@[m [mclass Generator(object):[m
+     Abstract class of on the fly generator used in dataset.[m
+     It generates graphs on the fly to be fed into the model.[m
+     """[m
+[32m+[m
+     def __init__(self, sizes, size_prob=None, dataset_len=0):[m
+         self.sizes = sizes[m
+         if sizes is not None:[m
+[36m@@ -194,6 +195,7 @@[m [mclass GraphDataset(object):[m
+                 of tensor backend custom split.[m
+             netlib: Graph backend packages, currently support networkx & snapx.[m
+         """[m
+[32m+[m
+     def __init__([m
+         self,[m
+         graphs: List[Graph],[m
+[36m@@ -1169,7 +1171,8 @@[m [mclass GraphDataset(object):[m
+         verbose: bool = False,[m
+         fixed_split: bool = False,[m
+         tensor_backend: bool = False,[m
+[31m-        netlib=None[m
+[32m+[m[32m        netlib=None,[m
+[32m+[m[32m        directed: bool = True[m
+     ) -> List[Graph]:[m
+         r"""[m
+         Transform a torch_geometric.data.Dataset object to a list of[m
+[36m@@ -1189,7 +1192,7 @@[m [mclass GraphDataset(object):[m
+             graphs = [[m
+                 Graph.pyg_to_graph([m
+                     data, verbose=verbose, fixed_split=True,[m
+[31m-                    tensor_backend=tensor_backend, netlib=netlib[m
+[32m+[m[32m                    tensor_backend=tensor_backend, netlib=netlib, directed=directed[m
+                 )[m
+                 for data in dataset[m
+             ][m
+[36m@@ -1200,7 +1203,7 @@[m [mclass GraphDataset(object):[m
+                 Graph.pyg_to_graph([m
+                     data, verbose=verbose,[m
+                     tensor_backend=tensor_backend,[m
+[31m-                    netlib=netlib[m
+[32m+[m[32m                    netlib=netlib, directed=directed[m
+                 )[m
+                 for data in dataset[m
+             ][m
+[1mdiff --git a/deepsnap/graph.py b/deepsnap/graph.py[m
+[1mindex 114fb7e..fa06d98 100644[m
+[1m--- a/deepsnap/graph.py[m
+[1m+++ b/deepsnap/graph.py[m
+[36m@@ -5,7 +5,6 @@[m [mimport math[m
+ import pdb[m
+ import numpy as np[m
+ import torch[m
+[31m-from torch_geometric.utils import to_undirected[m
+ from typing import ([m
+     Dict,[m
+     List,[m
+[36m@@ -350,6 +349,11 @@[m [mclass Graph(object):[m
+         """[m
+         return not self.is_directed()[m
+ [m
+[32m+[m[32m    def to_undirected(self):[m
+[32m+[m[32m        if isinstance(self.G, deepsnap._netlib.DiGraph):[m
+[32m+[m[32m            self.G.to_undirected()[m
+[32m+[m[32m            self.directed = False[m
+[32m+[m
+     def apply_tensor(self, func, *keys):[m
+         r"""[m
+         Applies the function :obj:`func` to all tensor attributes[m
+[36m@@ -1893,7 +1897,8 @@[m [mclass Graph(object):[m
+         verbose: bool = False,[m
+         fixed_split: bool = False,[m
+         tensor_backend: bool = False,[m
+[31m-        netlib=None[m
+[32m+[m[32m        netlib=None,[m
+[32m+[m[32m        directed: bool = True[m
+     ):[m
+         r"""[m
+         Converts Pytorch Geometric data to a Graph object.[m
+[36m@@ -1930,7 +1935,7 @@[m [mclass Graph(object):[m
+         if not tensor_backend:[m
+             if netlib is not None:[m
+                 deepsnap._netlib = netlib[m
+[31m-            if data.is_directed():[m
+[32m+[m[32m            if data.is_directed() and directed:[m
+                 G = deepsnap._netlib.DiGraph()[m
+             else:[m
+                 G = deepsnap._netlib.Graph()[m
